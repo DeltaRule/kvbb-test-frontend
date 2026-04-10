@@ -2,10 +2,10 @@
 //  Konfiguration
 // ============================================================
 window.ENV = {
-    // Adresse des lokalen Python-Servers (server.py)
-    SERVER_URL: "https://kvbb-test-api-01-acddb3gkeqdhd9h2.westeurope-01.azurewebsites.net",
+    // Leer = gleiche Domain (Azure Static Web Apps liefert API unter /api/*)
+    SERVER_URL: "",
 
-    // n8n-Webhook-URL – wird serverseitig von server.py gelesen
+    // n8n-Webhook-URL – wird serverseitig als Umgebungsvariable N8N_URL konfiguriert
     N8N_URL: "https://mms-n8n.germanywestcentral.cloudapp.azure.com/webhook/cab2d150-f4ca-40cd-b1d3-7d792a979366"
 
 };
