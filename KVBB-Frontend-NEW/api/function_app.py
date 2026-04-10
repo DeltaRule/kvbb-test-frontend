@@ -19,7 +19,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 N8N_URL = os.environ.get(
     "N8N_URL",
-    "https://mms-n8n.germanywestcentral.cloudapp.azure.com/webhook/cab2d150-f4ca-40cd-b1d3-7d792a979366",
+    "https://mms-n8n.germanywestcentral.cloudapp.azure.com/webhook/49f5ce3d-1cc8-4b03-a825-e613a4ca7518",
 )
 
 
