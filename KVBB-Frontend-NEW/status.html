@@ -292,7 +292,7 @@
             var hdrs = { 'Content-Type': 'application/json' };
             if (pw) hdrs['x-token'] = pw;
 
-            fetch((window.ENV && window.ENV.SERVER_URL || 'http://localhost:8000') + '/api/n8n', {
+            fetch(((window.ENV && window.ENV.SERVER_URL != null) ? window.ENV.SERVER_URL : '') + '/api/n8n', {
                 method: 'POST',
                 headers: hdrs,
                 body: JSON.stringify({ vorgangsnummer: vnr, art: 'status' })
@@ -412,7 +412,7 @@
             var payload = Object.assign({}, lastStatusData);
             payload.art = 'widerspruch';
 
-            var serverUrl = (window.ENV && window.ENV.SERVER_URL) || 'http://localhost:8000';
+            var serverUrl = (window.ENV && window.ENV.SERVER_URL != null) ? window.ENV.SERVER_URL : '';
 
             // Button deaktivieren
             var btn = document.getElementById('btn-widerspruch');
