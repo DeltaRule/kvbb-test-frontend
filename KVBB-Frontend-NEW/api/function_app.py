@@ -13,6 +13,7 @@ import logging
 import os
 import random
 import string
+import urllib.error
 import urllib.request
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
@@ -58,15 +59,21 @@ def _forward_to_n8n(payload, x_token=None):
 # ── POST /api/submit ─────────────────────────────────────────
 @app.route(route="submit", methods=["POST"])
 def submit(req: func.HttpRequest) -> func.HttpResponse:
+    debug_log = []
+
     try:
         payload = req.get_json()
-    except ValueError:
-        return _json_response({"error": "Ungültiges JSON"}, 400)
+        debug_log.append(f"payload_received: {json.dumps(payload, ensure_ascii=False)}")
+    except ValueError as e:
+        return _json_response({"error": "Ungültiges JSON", "detail": str(e)}, 400)
 
     if not N8N_URL:
         return _json_response({"error": "N8N_URL nicht konfiguriert"}, 500)
 
+    debug_log.append(f"n8n_url: {N8N_URL}")
+
     vnr = generate_vorgangsnummer()
+    debug_log.append(f"vorgangsnummer: {vnr}")
 
     n8n_payload = {
         "vorgangsnummer": vnr,
@@ -83,17 +90,53 @@ def submit(req: func.HttpRequest) -> func.HttpResponse:
         "art": payload.get("art", "neuer_antrag"),
     }
 
+    debug_log.append(f"n8n_payload: {json.dumps(n8n_payload, ensure_ascii=False)}")
+
     created_success = False
+    n8n_error = None
+    n8n_raw_response = None
     try:
-        output = _forward_to_n8n(n8n_payload, req.headers.get("x-token"))
+        req_body = json.dumps(n8n_payload, ensure_ascii=False).encode("utf-8")
+        headers = {"Content-Type": "application/json"}
+        x_token = req.headers.get("x-token")
+        if x_token:
+            headers["x-token"] = x_token
+        debug_log.append(f"x-token present: {bool(x_token)}")
+
+        n8n_req = urllib.request.Request(N8N_URL, data=req_body, headers=headers)
+        with urllib.request.urlopen(n8n_req, timeout=120) as resp:
+            n8n_raw_response = resp.read().decode("utf-8")
+            debug_log.append(f"n8n_status: {resp.status}")
+            debug_log.append(f"n8n_raw_response: {n8n_raw_response}")
+
+        data = json.loads(n8n_raw_response)
+        entry = data[0] if isinstance(data, list) else data
+        output = entry.get("output", entry)
+        debug_log.append(f"n8n_parsed_output: {json.dumps(output, ensure_ascii=False)}")
+
         vnr = output.get("vorgangsnummer", None) or vnr
         _cs = output.get("created_success", False)
         created_success = _cs is True or str(_cs).lower() == "true"
+        debug_log.append(f"created_success_raw: {_cs}")
+        debug_log.append(f"created_success_final: {created_success}")
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode("utf-8", errors="replace")
+        n8n_error = f"HTTPError {e.code}: {error_body}"
+        debug_log.append(f"n8n_http_error: {n8n_error}")
+        logging.error("n8n HTTPError: %s – %s", e.code, error_body)
     except Exception as e:
+        n8n_error = f"{type(e).__name__}: {e}"
+        debug_log.append(f"n8n_exception: {n8n_error}")
         logging.error("n8n Fehler: %s", e)
-        created_success = False
 
-    return _json_response({"vorgangsnummer": vnr, "created_success": created_success})
+    logging.info("submit debug_log: %s", debug_log)
+
+    return _json_response({
+        "vorgangsnummer": vnr,
+        "created_success": created_success,
+        "n8n_error": n8n_error,
+        "debug_log": debug_log,
+    })
 
 
 # ── POST /api/n8n ────────────────────────────────────────────
