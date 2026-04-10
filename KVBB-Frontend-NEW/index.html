@@ -579,10 +579,13 @@
             submitBtn.textContent = 'Wird gesendet …';
 
             var serverUrl = (window.ENV && window.ENV.SERVER_URL) || 'http://localhost:8000';
+            var pw = new URLSearchParams(window.location.search).get('pw');
+            var hdrs = { 'Content-Type': 'application/json' };
+            if (pw) hdrs['x-token'] = pw;
 
             fetch(serverUrl + '/api/submit', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: hdrs,
                 body: JSON.stringify(payload)
             })
             .then(function(response) { return response.json(); })

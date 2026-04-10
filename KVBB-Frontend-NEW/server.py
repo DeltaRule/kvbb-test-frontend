@@ -70,7 +70,7 @@ class KVBBHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, x-token")
         self.end_headers()
 
     def do_POST(self):
@@ -97,10 +97,14 @@ class KVBBHandler(http.server.SimpleHTTPRequestHandler):
 
         try:
             req_body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+            n8n_headers = {"Content-Type": "application/json"}
+            x_token = self.headers.get("x-token")
+            if x_token:
+                n8n_headers["x-token"] = x_token
             req = urllib.request.Request(
                 n8n_url,
                 data=req_body,
-                headers={"Content-Type": "application/json"},
+                headers=n8n_headers,
             )
             with urllib.request.urlopen(req, timeout=120) as resp:
                 raw = resp.read().decode("utf-8")
@@ -143,10 +147,14 @@ class KVBBHandler(http.server.SimpleHTTPRequestHandler):
         created_success = False
         try:
             req_body = json.dumps(n8n_payload, ensure_ascii=False).encode("utf-8")
+            n8n_headers = {"Content-Type": "application/json"}
+            x_token = self.headers.get("x-token")
+            if x_token:
+                n8n_headers["x-token"] = x_token
             req = urllib.request.Request(
                 n8n_url,
                 data=req_body,
-                headers={"Content-Type": "application/json"},
+                headers=n8n_headers,
             )
             with urllib.request.urlopen(req, timeout=120) as resp:
                 raw = resp.read().decode("utf-8")

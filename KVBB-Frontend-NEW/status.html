@@ -288,9 +288,13 @@
             btn.disabled = true;
             btn.textContent = 'Wird abgerufen …';
 
+            var pw = new URLSearchParams(window.location.search).get('pw');
+            var hdrs = { 'Content-Type': 'application/json' };
+            if (pw) hdrs['x-token'] = pw;
+
             fetch((window.ENV && window.ENV.SERVER_URL || 'http://localhost:8000') + '/api/n8n', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: hdrs,
                 body: JSON.stringify({ vorgangsnummer: vnr, art: 'status' })
             })
             .then(function(r) { return r.json(); })
@@ -415,9 +419,13 @@
             btn.disabled = true;
             btn.textContent = 'Wird gesendet …';
 
+            var pw2 = new URLSearchParams(window.location.search).get('pw');
+            var hdrs2 = { 'Content-Type': 'application/json' };
+            if (pw2) hdrs2['x-token'] = pw2;
+
             fetch(serverUrl + '/api/n8n', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: hdrs2,
                 body: JSON.stringify(payload)
             })
             .then(function(response) { return response.text(); })
