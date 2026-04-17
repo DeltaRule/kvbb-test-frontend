@@ -275,6 +275,19 @@
 
     <script src="config.js"></script>
     <script>
+        // Propagate query parameters to all internal links
+        (function() {
+            var qs = window.location.search;
+            if (!qs) return;
+            document.querySelectorAll('a[href]').forEach(function(a) {
+                var href = a.getAttribute('href');
+                if (href && /^[a-zA-Z0-9_\-]+\.html/.test(href) && href.indexOf('?') === -1) {
+                    a.setAttribute('href', href + qs);
+                }
+            });
+        })();
+    </script>
+    <script>
         document.getElementById('input-bs').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') lookupStatus();
         });

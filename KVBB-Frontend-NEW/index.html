@@ -517,6 +517,19 @@
 
     <script src="config.js"></script>
     <script>
+        // Propagate query parameters to all internal links
+        (function() {
+            var qs = window.location.search;
+            if (!qs) return;
+            document.querySelectorAll('a[href]').forEach(function(a) {
+                var href = a.getAttribute('href');
+                if (href && /^[a-zA-Z0-9_\-]+\.html/.test(href) && href.indexOf('?') === -1) {
+                    a.setAttribute('href', href + qs);
+                }
+            });
+        })();
+    </script>
+    <script>
         function showStep(n) {
             var steps = ['step-1','step-2','step-3','step-4','step-5','step-confirm'];
             steps.forEach(function(id) {

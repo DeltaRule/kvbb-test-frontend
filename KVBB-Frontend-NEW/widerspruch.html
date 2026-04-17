@@ -32,6 +32,19 @@
         </div>
     </div>
     <script>
+        // Propagate query parameters to all internal links
+        (function() {
+            var qs = window.location.search;
+            if (!qs) return;
+            document.querySelectorAll('a[href]').forEach(function(a) {
+                var href = a.getAttribute('href');
+                if (href && /^[a-zA-Z0-9_\-]+\.html/.test(href) && href.indexOf('?') === -1) {
+                    a.setAttribute('href', href + qs);
+                }
+            });
+        })();
+    </script>
+    <script>
         // Zeige die gespeicherte Response an
         var resp = localStorage.getItem('widerspruch_response');
         document.getElementById('response').textContent = resp || 'Keine Antwort erhalten.';
